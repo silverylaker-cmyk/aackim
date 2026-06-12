@@ -127,12 +127,14 @@ let db;
 
 function openDb() {
     return new Promise((resolve, reject) => {
-        const req = indexedDB.open('aac-db', 1);
+        const req = indexedDB.open('aac-db', 2);
         req.onupgradeneeded = () => {
             const d = req.result;
-            d.createObjectStore('boards', { keyPath: 'id' });
-            d.createObjectStore('cells', { keyPath: 'id' });
-            d.createObjectStore('settings', { keyPath: 'key' });
+            // 기존 데이터 보존: 없는 스토어만 새로 만든다 (v1 → v2 업그레이드 시 logs만 추가)
+            if (!d.objectStoreNames.contains('boards')) d.createObjectStore('boards', { keyPath: 'id' });
+            if (!d.objectStoreNames.contains('cells')) d.createObjectStore('cells', { keyPath: 'id' });
+            if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'key' });
+            if (!d.objectStoreNames.contains('logs')) d.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
         };
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
@@ -339,8 +341,14 @@ function speakTts(text) {
     });
 }
 
+function logUsage(cell) {
+    // 기기 내에만 저장(개인정보) — 실패해도 말하기는 막지 않는다
+    dbPut('logs', { cellId: cell.id, label: cell.label, ts: Date.now() }).catch(() => {});
+}
+
 async function speakCell(cell, cellEl) {
     stopCurrentAudio();
+    logUsage(cell);
     if (cellEl) cellEl.classList.add('speaking');
     showSpeakOverlay(cell);
 
@@ -429,7 +437,42 @@ function openSettings() {
     $('card-scale').value = settings.cardScale || 1;
     $('card-scale-value').textContent = `${Number(settings.cardScale || 1).toFixed(2)}배`;
     renderBoardManager();
+    renderUsageStats();
     $('settings-modal').style.display = 'flex';
+}
+
+async function renderUsageStats() {
+    const wrap = $('usage-stats');
+    if (!wrap) return;
+    const logs = await dbGetAll('logs');
+    $('usage-total').textContent = `총 ${logs.length}번 눌렀어요`;
+    if (logs.length === 0) {
+        wrap.innerHTML = '<p class="hint">아직 사용 기록이 없어요. 아이가 카드를 누르면 여기에 쌓여요.</p>';
+        return;
+    }
+    const counts = {};
+    logs.forEach(l => { counts[l.label] = (counts[l.label] || 0) + 1; });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const max = sorted[0][1];
+    wrap.innerHTML = '';
+    sorted.forEach(([label, n]) => {
+        const row = document.createElement('div');
+        row.className = 'usage-row';
+        const name = document.createElement('span');
+        name.className = 'usage-label';
+        name.textContent = label;
+        const track = document.createElement('span');
+        track.className = 'usage-track';
+        const bar = document.createElement('span');
+        bar.className = 'usage-bar';
+        bar.style.width = `${Math.round((n / max) * 100)}%`;
+        track.appendChild(bar);
+        const num = document.createElement('span');
+        num.className = 'usage-count';
+        num.textContent = `${n}번`;
+        row.append(name, track, num);
+        wrap.appendChild(row);
+    });
 }
 
 function setupSettings() {
@@ -458,6 +501,12 @@ function setupSettings() {
 
     $('btn-add-board').addEventListener('click', () => openBoardEditor(null));
     $('btn-load-starter').addEventListener('click', loadStarterPack);
+
+    $('btn-clear-logs').addEventListener('click', async () => {
+        if (!confirm('사용 기록을 모두 지울까요? 카드와 녹음은 그대로 둡니다.')) return;
+        await dbClear('logs');
+        renderUsageStats();
+    });
 
     $('btn-enter-edit').addEventListener('click', () => {
         editMode = true;

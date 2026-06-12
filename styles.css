@@ -642,3 +642,55 @@ input[type="range"] {
     font-weight: 800;
     margin: 10px 0;
 }
+
+/* ---------- Usage stats ---------- */
+.usage-total {
+    font-weight: 700;
+    margin: 4px 0 10px;
+}
+
+.usage-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.usage-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.usage-label {
+    flex: 0 0 30%;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.usage-track {
+    flex: 1 1 auto;
+    height: 14px;
+    background: #ece5da;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.usage-bar {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+    border-radius: 7px;
+}
+
+.usage-count {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 36px;
+    text-align: right;
+}
