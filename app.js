@@ -1139,7 +1139,11 @@ async function searchArasaac(query) {
             img.addEventListener('click', async () => {
                 results.innerHTML = '<div class="status">그림을 저장하는 중이에요…</div>';
                 try {
-                    const blob = await (await fetch(ARASAAC_IMAGE(item._id))).blob();
+                    const r = await fetch(ARASAAC_IMAGE(item._id));
+                    // 서버 오류·잘못된 응답일 때 그림이 아닌 내용이 카드로 저장되는 것을 막는다
+                    if (!r.ok) throw new Error(r.status);
+                    const blob = await r.blob();
+                    if (!blob.type.startsWith('image/')) throw new Error('not an image');
                     pendingImage = blob;
                     pendingEmoji = null;
                     updateEditorPreview();
