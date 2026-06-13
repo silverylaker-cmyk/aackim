@@ -1374,6 +1374,23 @@ function setupWakeLock() {
     });
 }
 
+// ===== 모달이 열리면 뒤쪽 카드/버튼을 비활성화 =====
+// (키보드·스위치 사용 시 모달 뒤 카드로 Tab 이동하거나 눌리는 것을 막는다.
+//  inert 미지원 브라우저에서는 속성이 무시되어 기존과 동일하게 동작한다.)
+function setupModalInert() {
+    const app = document.querySelector('.app');
+    if (!app) return;
+    const modals = [...document.querySelectorAll('.modal')];
+    const update = () => {
+        const anyOpen = modals.some(m => m.style.display && m.style.display !== 'none');
+        if (anyOpen) app.setAttribute('inert', '');
+        else app.removeAttribute('inert');
+    };
+    const mo = new MutationObserver(update);
+    modals.forEach(m => mo.observe(m, { attributes: true, attributeFilter: ['style'] }));
+    update();
+}
+
 // ===== Init =====
 async function init() {
     db = await openDb();
@@ -1393,6 +1410,7 @@ async function init() {
     setupArasaac();
     setupBatch();
     setupEscapeToClose();
+    setupModalInert();
     setupWakeLock();
 
     // 안드로이드 크롬에서 voices가 늦게 로드되는 경우 대비
