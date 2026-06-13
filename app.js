@@ -490,7 +490,15 @@ function openSettings() {
     renderLabelSizeButtons();
     renderBoardManager();
     renderUsageStats();
+    checkKoreanVoice();
     $('settings-modal').style.display = 'flex';
+}
+
+function checkKoreanVoice() {
+    const warn = $('tts-no-voice');
+    if (!warn) return;
+    const hasKorean = speechSynthesis.getVoices().some(v => v.lang && v.lang.startsWith('ko'));
+    warn.style.display = hasKorean ? 'none' : 'block';
 }
 
 async function renderUsageStats() {
@@ -1256,7 +1264,7 @@ async function init() {
 
     // 안드로이드 크롬에서 voices가 늦게 로드되는 경우 대비
     speechSynthesis.getVoices();
-    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); checkKoreanVoice(); };
 
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         navigator.serviceWorker.register('sw.js').catch(() => {});
