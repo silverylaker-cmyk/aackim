@@ -214,21 +214,30 @@ function renderTabs() {
     });
 }
 
+function emojiSpan(cell) {
+    const span = document.createElement('span');
+    span.className = 'emoji';
+    span.textContent = cell.emoji || '🔲';
+    span.setAttribute('aria-hidden', 'true');
+    return span;
+}
+
 function cellImageHtml(cell, container) {
     container.innerHTML = '';
     if (cell.image) {
         const img = document.createElement('img');
         img.src = URL.createObjectURL(cell.image);
         img.onload = () => URL.revokeObjectURL(img.src);
+        // 그림을 못 불러오면 깨진 아이콘 대신 차분히 이모지로 대체하고 URL도 정리한다
+        img.onerror = () => {
+            URL.revokeObjectURL(img.src);
+            img.replaceWith(emojiSpan(cell));
+        };
         // 카드의 aria-label이 의미를 전하므로 그림은 보조기기에서 장식으로 처리(중복 안내 방지)
         img.alt = '';
         container.appendChild(img);
     } else {
-        const span = document.createElement('span');
-        span.className = 'emoji';
-        span.textContent = cell.emoji || '🔲';
-        span.setAttribute('aria-hidden', 'true');
-        container.appendChild(span);
+        container.appendChild(emojiSpan(cell));
     }
 }
 
