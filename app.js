@@ -159,7 +159,7 @@ const dbClear = (store) => tx(store, 'readwrite', s => s.clear());
 // ===== App state =====
 let boards = [];
 let cells = [];
-let settings = { voice: 'tts', ttsRate: 0.9, cardScale: 1, animations: false, rewardSound: false };
+let settings = { voice: 'tts', ttsRate: 0.9, cardScale: 1, animations: false, rewardSound: false, arasaacRecent: [] };
 let activeBoardId = 'core';
 let editMode = false;
 let currentAudio = null;
@@ -839,6 +839,7 @@ function setupEditor() {
     $('btn-pick-arasaac').addEventListener('click', () => {
         $('arasaac-query').value = $('editor-label').value.trim();
         $('arasaac-results').innerHTML = '';
+        renderArasaacRecent();
         $('arasaac-modal').style.display = 'flex';
     });
 
@@ -955,30 +956,63 @@ function setupEmojiPicker() {
 // ===== ARASAAC search =====
 function setupArasaac() {
     $('arasaac-close').addEventListener('click', () => { $('arasaac-modal').style.display = 'none'; });
-    $('arasaac-search').addEventListener('click', searchArasaac);
+    $('arasaac-search').addEventListener('click', () => searchArasaac());
     $('arasaac-query').addEventListener('keydown', (e) => { if (e.key === 'Enter') searchArasaac(); });
 }
 
-async function searchArasaac() {
-    const q = $('arasaac-query').value.trim();
+function renderArasaacRecent() {
+    const wrap = $('arasaac-recent');
+    if (!wrap) return;
+    const recent = settings.arasaacRecent || [];
+    wrap.innerHTML = '';
+    if (recent.length === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'flex';
+    const label = document.createElement('span');
+    label.className = 'recent-label';
+    label.textContent = '최근:';
+    wrap.appendChild(label);
+    recent.forEach(term => {
+        const chip = document.createElement('button');
+        chip.className = 'arasaac-chip';
+        chip.textContent = term;
+        chip.addEventListener('click', () => {
+            $('arasaac-query').value = term;
+            searchArasaac();
+        });
+        wrap.appendChild(chip);
+    });
+}
+
+function pushArasaacRecent(q) {
+    let recent = settings.arasaacRecent || [];
+    recent = [q, ...recent.filter(t => t !== q)].slice(0, 8);
+    saveSetting('arasaacRecent', recent);
+    renderArasaacRecent();
+}
+
+async function searchArasaac(query) {
+    const q = (query ?? $('arasaac-query').value).trim();
     if (!q) return;
     const results = $('arasaac-results');
-    results.innerHTML = '<div class="status">검색 중...</div>';
+    results.innerHTML = '<div class="status">🔍 그림을 찾는 중이에요…</div>';
     try {
         const res = await fetch(ARASAAC_SEARCH + encodeURIComponent(q));
-        if (!res.ok) throw new Error(res.status);
-        const list = await res.json();
+        // ARASAAC는 일치하는 그림이 없으면 404를 돌려준다 → 빈 결과로 처리
+        if (!res.ok && res.status !== 404) throw new Error(res.status);
+        const list = res.status === 404 ? [] : await res.json();
         results.innerHTML = '';
-        if (list.length === 0) {
-            results.innerHTML = '<div class="status">결과가 없습니다. 다른 단어로 검색해 보세요.</div>';
+        if (!Array.isArray(list) || list.length === 0) {
+            results.innerHTML = '<div class="status">‘' + q + '’에 대한 그림이 없어요. 더 쉬운 단어(예: 물, 밥)로 검색해 보세요.</div>';
             return;
         }
-        list.slice(0, 24).forEach(item => {
+        pushArasaacRecent(q);
+        list.slice(0, 48).forEach(item => {
             const img = document.createElement('img');
             img.loading = 'lazy';
+            img.alt = q;
             img.src = ARASAAC_IMAGE(item._id);
             img.addEventListener('click', async () => {
-                results.innerHTML = '<div class="status">그림을 저장하는 중...</div>';
+                results.innerHTML = '<div class="status">그림을 저장하는 중이에요…</div>';
                 try {
                     const blob = await (await fetch(ARASAAC_IMAGE(item._id))).blob();
                     pendingImage = blob;
@@ -986,13 +1020,22 @@ async function searchArasaac() {
                     updateEditorPreview();
                     $('arasaac-modal').style.display = 'none';
                 } catch {
-                    results.innerHTML = '<div class="status">그림을 가져오지 못했습니다. 다시 시도해 주세요.</div>';
+                    results.innerHTML = '<div class="status">그림을 가져오지 못했어요. 다시 시도해 주세요.</div>';
                 }
             });
             results.appendChild(img);
         });
     } catch {
-        results.innerHTML = '<div class="status">검색에 실패했습니다. 인터넷 연결을 확인해 주세요.</div>';
+        results.innerHTML = '';
+        const status = document.createElement('div');
+        status.className = 'status';
+        status.textContent = '검색에 실패했어요. 인터넷 연결을 확인해 주세요. ';
+        const retry = document.createElement('button');
+        retry.className = 'btn small-btn';
+        retry.textContent = '다시 시도';
+        retry.addEventListener('click', () => searchArasaac(q));
+        status.appendChild(retry);
+        results.appendChild(status);
     }
 }
 
