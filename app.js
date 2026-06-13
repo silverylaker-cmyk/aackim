@@ -418,7 +418,7 @@ function setupGate() {
         holdTimer = setTimeout(() => {
             gear.classList.remove('holding');
             openGate(() => openSettings());
-        }, 1600);
+        }, 3000);
     };
     const cancel = () => {
         gear.classList.remove('holding');

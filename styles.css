@@ -118,7 +118,7 @@ body {
 
 .gear-btn.holding .gear-hold-ring {
     border-color: var(--primary);
-    animation: holdPulse 1.6s linear forwards;
+    animation: holdPulse 3s linear forwards;
 }
 
 @keyframes holdPulse {
