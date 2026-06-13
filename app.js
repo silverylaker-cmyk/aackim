@@ -1311,20 +1311,27 @@ async function importData(e) {
         return;
     }
     if (!confirm('가져오기를 하면 지금 카드가 모두 교체됩니다. 계속할까요?')) return;
+    // 기존 데이터를 지우기 전에 새 카드를 먼저 모두 변환해 둔다 —
+    // 변환 중 오류가 나도 지금 쓰던 카드가 사라지지 않게 한다.
+    let preparedCells;
+    try {
+        preparedCells = await Promise.all(data.cells.map(async c => ({
+            ...c,
+            image: await dataUrlToBlob(c.image),
+            audio: {
+                mom: await dataUrlToBlob(c.audio?.mom),
+                dad: await dataUrlToBlob(c.audio?.dad),
+            },
+        })));
+    } catch {
+        alert('파일을 읽지 못했습니다. 내보내기로 만든 백업 파일인지 확인해 주세요.');
+        return; // 기존 데이터는 그대로 보존된다
+    }
     try {
         await dbClear('boards');
         await dbClear('cells');
         for (const b of data.boards) await dbPut('boards', b);
-        for (const c of data.cells) {
-            await dbPut('cells', {
-                ...c,
-                image: await dataUrlToBlob(c.image),
-                audio: {
-                    mom: await dataUrlToBlob(c.audio?.mom),
-                    dad: await dataUrlToBlob(c.audio?.dad),
-                },
-            });
-        }
+        for (const c of preparedCells) await dbPut('cells', c);
         if (data.settings) {
             for (const [k, v] of Object.entries(data.settings)) await saveSetting(k, v);
         }
