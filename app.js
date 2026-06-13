@@ -1355,6 +1355,25 @@ function setupEscapeToClose() {
     });
 }
 
+// ===== 화면 꺼짐 방지 (의사소통 도중 태블릿이 잠들지 않게) =====
+let wakeLock = null;
+async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+    } catch (e) {
+        // 배터리 절약 모드 등에서 거부될 수 있음 — 조용히 무시
+    }
+}
+
+function setupWakeLock() {
+    requestWakeLock();
+    // 다른 화면에 갔다 돌아오면 잠금이 풀리므로 다시 요청한다
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') requestWakeLock();
+    });
+}
+
 // ===== Init =====
 async function init() {
     db = await openDb();
@@ -1374,6 +1393,7 @@ async function init() {
     setupArasaac();
     setupBatch();
     setupEscapeToClose();
+    setupWakeLock();
 
     // 안드로이드 크롬에서 voices가 늦게 로드되는 경우 대비
     speechSynthesis.getVoices();
