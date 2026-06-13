@@ -278,6 +278,13 @@ function renderGrid() {
         grid.appendChild(div);
     });
 
+    if (list.length === 0 && !editMode) {
+        const empty = document.createElement('div');
+        empty.className = 'grid-empty';
+        empty.textContent = '이 폴더에는 아직 카드가 없어요. 톱니바퀴를 길게 눌러 편집 모드에서 카드를 추가해 주세요.';
+        grid.appendChild(empty);
+    }
+
     if (editMode) {
         const add = document.createElement('div');
         add.className = 'cell add-cell';

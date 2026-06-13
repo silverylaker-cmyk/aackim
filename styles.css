@@ -157,6 +157,18 @@ body {
     }
 }
 
+.grid-empty {
+    grid-column: 1 / -1;
+    align-self: center;
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.6;
+    padding: 40px 24px;
+    word-break: keep-all;
+}
+
 .cell {
     position: relative;
     background: var(--card);
