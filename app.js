@@ -220,11 +220,14 @@ function cellImageHtml(cell, container) {
         const img = document.createElement('img');
         img.src = URL.createObjectURL(cell.image);
         img.onload = () => URL.revokeObjectURL(img.src);
+        // 카드의 aria-label이 의미를 전하므로 그림은 보조기기에서 장식으로 처리(중복 안내 방지)
+        img.alt = '';
         container.appendChild(img);
     } else {
         const span = document.createElement('span');
         span.className = 'emoji';
         span.textContent = cell.emoji || '🔲';
+        span.setAttribute('aria-hidden', 'true');
         container.appendChild(span);
     }
 }
