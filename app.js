@@ -1297,6 +1297,30 @@ async function importData(e) {
     }
 }
 
+// Esc로 열린 모달 닫기 — 각 모달의 기존 취소/닫기 버튼을 눌러 정리 로직을 그대로 탄다.
+// 가장 위에 겹쳐 뜬 모달(이모지·ARASAAC가 편집기 위)부터 닫는다.
+function setupEscapeToClose() {
+    const order = [
+        ['emoji-modal', 'emoji-cancel'],
+        ['arasaac-modal', 'arasaac-close'],
+        ['batch-modal', 'batch-quit'],
+        ['editor-modal', 'editor-cancel'],
+        ['board-modal', 'board-cancel'],
+        ['settings-modal', 'settings-close'],
+        ['gate-modal', 'gate-cancel'],
+    ];
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        for (const [modalId, closeId] of order) {
+            const modal = $(modalId);
+            if (modal && modal.style.display !== 'none') {
+                $(closeId)?.click();
+                break;
+            }
+        }
+    });
+}
+
 // ===== Init =====
 async function init() {
     db = await openDb();
@@ -1315,6 +1339,7 @@ async function init() {
     setupEmojiPicker();
     setupArasaac();
     setupBatch();
+    setupEscapeToClose();
 
     // 안드로이드 크롬에서 voices가 늦게 로드되는 경우 대비
     speechSynthesis.getVoices();
