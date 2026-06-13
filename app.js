@@ -1424,6 +1424,11 @@ async function init() {
     db = await openDb();
     await loadSettings();
     await seedIfEmpty();
+    // 활성 폴더가 실제로 존재하는지 확인 — 없으면 첫 폴더로 맞춘다.
+    // (예: 'core' 폴더가 없는 백업을 가져온 뒤 다시 열면 빈 화면이 뜨던 문제 방지)
+    if (!boards.some(b => b.id === activeBoardId)) {
+        activeBoardId = [...boards].sort((a, b) => a.order - b.order)[0]?.id || activeBoardId;
+    }
     applyCardScale();
     applyLabelSize();
     applyAnimSetting();
