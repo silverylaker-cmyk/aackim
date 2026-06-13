@@ -460,6 +460,18 @@ function hideSpeakOverlay() {
     overlayTimer = setTimeout(() => { $('speak-overlay').style.display = 'none'; }, 250);
 }
 
+function setupSpeakOverlay() {
+    // 오버레이를 누르면 재생을 멈추고 바로 그림판으로 돌아간다
+    // (긴 부모 녹음을 끝까지 기다리지 않고 다음 카드를 누를 수 있게)
+    $('speak-overlay').addEventListener('click', () => {
+        speakSeq++; // 진행 중이던 speakCell이 마무리(차임 등)를 다시 하지 않도록
+        stopCurrentAudio();
+        document.querySelectorAll('.cell.speaking').forEach(c => c.classList.remove('speaking'));
+        clearTimeout(overlayTimer);
+        $('speak-overlay').style.display = 'none';
+    });
+}
+
 // ===== Caregiver gate (3초 길게 누르기 + 산수 문제) =====
 let holdTimer = null;
 let gateCallback = null;
@@ -1411,6 +1423,7 @@ async function init() {
     setupBatch();
     setupEscapeToClose();
     setupModalInert();
+    setupSpeakOverlay();
     setupWakeLock();
 
     // 안드로이드 크롬에서 voices가 늦게 로드되는 경우 대비
