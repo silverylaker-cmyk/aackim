@@ -1561,4 +1561,16 @@ async function init() {
     }
 }
 
-init();
+function showFatalError() {
+    const grid = document.getElementById('grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'grid-empty';
+    box.textContent = '앱을 시작할 수 없어요. 태블릿을 다시 켠 뒤 열어 주세요. 같은 화면이 계속 나오면 브라우저의 사생활 보호(시크릿) 모드를 끄거나 저장공간이 충분한지 확인해 주세요.';
+    grid.appendChild(box);
+}
+
+// IndexedDB를 못 여는 환경(사생활 보호 모드·저장공간 부족·손상 등)에서
+// 빈 흰 화면 대신 차분한 안내를 보여준다.
+init().catch(() => showFatalError());
