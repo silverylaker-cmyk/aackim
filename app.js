@@ -902,7 +902,13 @@ function setupEditor() {
         if (pendingAudio.mom !== undefined) cell.audio.mom = pendingAudio.mom;
         if (pendingAudio.dad !== undefined) cell.audio.dad = pendingAudio.dad;
 
-        await dbPut('cells', cell);
+        try {
+            await dbPut('cells', cell);
+        } catch {
+            // 저장 공간 부족 등으로 저장이 실패하면 창을 닫지 않고 알려준다(입력 내용 보존)
+            alert('카드를 저장하지 못했어요. 저장 공간이 부족할 수 있어요. 사진을 빼거나 오래된 카드를 정리한 뒤 다시 시도해 주세요.');
+            return;
+        }
         cells = await dbGetAll('cells');
         $('editor-modal').style.display = 'none';
         renderGrid();
