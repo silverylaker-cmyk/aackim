@@ -271,7 +271,16 @@ function renderGrid() {
 
             div.addEventListener('click', () => openEditor(cell));
         } else {
-            div.addEventListener('click', () => speakCell(cell, div));
+            let startX, startY;
+            div.addEventListener('pointerdown', (e) => {
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+            div.addEventListener('pointerup', (e) => {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                if (Math.sqrt(dx * dx + dy * dy) < 30) speakCell(cell, div);
+            });
         }
         grid.appendChild(div);
     });

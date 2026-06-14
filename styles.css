@@ -171,6 +171,7 @@ body {
     cursor: pointer;
     padding: 10px;
     transition: transform 0.08s;
+    touch-action: manipulation;
 }
 
 .cell:active,
