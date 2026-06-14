@@ -420,6 +420,8 @@ function playBlob(blob) {
     });
 }
 
+let activeUtterance = null; // 일부 브라우저가 발화 객체를 가비지 컬렉션해 onend가 안 오는 것 방지
+
 function speakTts(text) {
     return new Promise((resolve) => {
         const u = new SpeechSynthesisUtterance(text);
@@ -427,7 +429,20 @@ function speakTts(text) {
         u.rate = settings.ttsRate;
         const voice = speechSynthesis.getVoices().find(v => v.lang.startsWith('ko'));
         if (voice) u.voice = voice;
-        u.onend = u.onerror = resolve;
+        activeUtterance = u;
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearTimeout(watchdog);
+            if (activeUtterance === u) activeUtterance = null;
+            resolve();
+        };
+        u.onend = u.onerror = finish;
+        // 일부 안드로이드 태블릿 브라우저는 onend/onerror가 끝내 오지 않아
+        // 약속이 영영 안 풀린다(말풍선·강조가 멈춘 채로 남음). 글자 수에 맞춰
+        // 넉넉히 기다린 뒤 강제로 마무리해 화면 상태가 항상 회복되게 한다.
+        const watchdog = setTimeout(finish, 3000 + text.length * 600);
         speechSynthesis.speak(u);
     });
 }
