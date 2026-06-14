@@ -279,7 +279,7 @@ function renderGrid() {
             div.addEventListener('pointerup', (e) => {
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-                if (Math.sqrt(dx * dx + dy * dy) < 60) speakCell(cell, div);
+                if (Math.sqrt(dx * dx + dy * dy) < 120) speakCell(cell, div);
             });
         }
         grid.appendChild(div);
