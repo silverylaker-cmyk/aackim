@@ -1467,7 +1467,11 @@ function setupWakeLock() {
     requestWakeLock();
     // 다른 화면에 갔다 돌아오면 잠금이 풀리므로 다시 요청한다
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') requestWakeLock();
+        if (document.visibilityState !== 'visible') return;
+        requestWakeLock();
+        // 태블릿이 절전(화면 꺼짐) 후 깨어나면 일부 브라우저에서 음성 합성이
+        // 멈춰 있어 첫 카드 탭에 소리가 안 난다. resume()로 깨워 둔다.
+        try { speechSynthesis.resume(); } catch (e) {}
     });
 }
 

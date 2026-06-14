@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aac-shell-v44';
+const CACHE_NAME = 'aac-shell-v45';
 const SHELL = [
     './',
     './index.html',
