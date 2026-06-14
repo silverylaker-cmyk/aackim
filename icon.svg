@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <rect width="512" height="512" rx="100" fill="#fdf8f2"/>
-    <rect x="60" y="110" width="392" height="260" rx="60" fill="#5b8def"/>
-    <path d="M170 370 L150 440 L240 370 Z" fill="#5b8def"/>
-    <circle cx="170" cy="240" r="28" fill="#fff"/>
-    <circle cx="256" cy="240" r="28" fill="#fff"/>
-    <circle cx="342" cy="240" r="28" fill="#fff"/>
+    <!-- 마스커블 아이콘: 배경은 가장자리까지 꽉 채우고(런처가 원/스퀘어로 잘라냄),
+         말풍선은 안전 영역(중심 반경 약 205) 안에 들어오도록 배치한다. -->
+    <rect width="512" height="512" fill="#fdf8f2"/>
+    <rect x="120" y="150" width="272" height="168" rx="44" fill="#5b8def"/>
+    <path d="M190 318 L168 372 L262 318 Z" fill="#5b8def"/>
+    <circle cx="176" cy="234" r="24" fill="#fff"/>
+    <circle cx="256" cy="234" r="24" fill="#fff"/>
+    <circle cx="336" cy="234" r="24" fill="#fff"/>
 </svg>
