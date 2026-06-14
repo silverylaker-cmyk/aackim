@@ -1264,8 +1264,16 @@ function setupBatch() {
     $('batch-next').addEventListener('click', async () => {
         const cell = batchQueue[batchIndex];
         cell.audio = cell.audio || { mom: null, dad: null };
+        const prev = cell.audio[batchProfile];
         cell.audio[batchProfile] = batchBlob;
-        await dbPut('cells', cell);
+        try {
+            await dbPut('cells', cell);
+        } catch {
+            // 저장 공간 부족 등으로 녹음 저장이 실패하면 알리고 넘어가지 않는다(녹음 유실 방지)
+            cell.audio[batchProfile] = prev;
+            alert('녹음을 저장하지 못했어요. 저장 공간이 부족할 수 있어요. 오래된 사진·녹음을 정리한 뒤 다시 시도해 주세요.');
+            return;
+        }
         advanceBatch();
     });
 
