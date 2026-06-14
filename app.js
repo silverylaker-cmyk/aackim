@@ -447,7 +447,7 @@ async function speakCell(cell, cellEl) {
     else if (pref === 'dad') blob = cell.audio?.dad || cell.audio?.mom;
 
     if (blob) await playBlob(blob);
-    else await speakTts(cell.label);
+    else await speakTts(cell.speech || cell.label);
 
     // 말하는 도중 다른 카드를 눌렀다면(최신 호출이 아니면) 마무리는 그쪽에 맡긴다
     if (mySeq !== speakSeq) return;
@@ -835,6 +835,7 @@ function openEditor(cell) {
 
     $('editor-title').textContent = cell ? '카드 편집' : '새 카드 만들기';
     $('editor-label').value = cell ? cell.label : '';
+    $('editor-speech').value = cell ? (cell.speech || '') : '';
     $('editor-delete').style.display = cell ? 'block' : 'none';
 
     const sel = $('editor-board');
@@ -894,6 +895,7 @@ function setupEditor() {
             order: Math.max(0, ...cells.map(c => c.order)) + 1,
         };
         cell.label = label;
+        cell.speech = $('editor-speech').value.trim() || null;
         cell.boardId = $('editor-board').value;
         if (pendingImage !== undefined) cell.image = pendingImage;
         if (pendingEmoji !== undefined) cell.emoji = pendingEmoji;
