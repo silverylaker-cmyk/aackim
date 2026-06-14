@@ -1422,10 +1422,27 @@ function setupModalInert() {
     const app = document.querySelector('.app');
     if (!app) return;
     const modals = [...document.querySelectorAll('.modal')];
+    const isOpen = m => m.style.display && m.style.display !== 'none';
+    let prevOpen = false;
+    let lastFocused = null;
     const update = () => {
-        const anyOpen = modals.some(m => m.style.display && m.style.display !== 'none');
+        const openModal = modals.find(isOpen);
+        const anyOpen = !!openModal;
         if (anyOpen) app.setAttribute('inert', '');
         else app.removeAttribute('inert');
+        // 모달이 열리는 순간: 뒤쪽이 inert가 되므로 포커스를 모달 안으로 옮긴다.
+        // (글자 입력칸이 아니라 모달 상자에 포커스를 줘 태블릿 키보드가 튀어나오지 않게 한다.)
+        if (anyOpen && !prevOpen) {
+            lastFocused = document.activeElement;
+            const box = openModal.querySelector('.modal-box') || openModal;
+            box.setAttribute('tabindex', '-1');
+            box.focus({ preventScroll: true });
+        } else if (!anyOpen && prevOpen) {
+            // 모달이 모두 닫히면 원래 누른 곳으로 포커스를 되돌린다.
+            if (lastFocused && document.contains(lastFocused)) lastFocused.focus({ preventScroll: true });
+            lastFocused = null;
+        }
+        prevOpen = anyOpen;
     };
     const mo = new MutationObserver(update);
     modals.forEach(m => mo.observe(m, { attributes: true, attributeFilter: ['style'] }));
