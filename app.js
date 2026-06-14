@@ -526,6 +526,9 @@ function setupGate() {
     gear.addEventListener('pointerdown', start);
     gear.addEventListener('pointerup', cancel);
     gear.addEventListener('pointerleave', cancel);
+    // 태블릿에서 OS가 제스처를 가로채면(시스템 스와이프·손바닥 인식 등) pointercancel이 온다.
+    // 이때 타이머를 정리하지 않으면 길게 누르기가 잘못 열리거나 진행 표시가 남는다.
+    gear.addEventListener('pointercancel', cancel);
 
     $('gate-cancel').addEventListener('click', () => { $('gate-modal').style.display = 'none'; });
     $('gate-ok').addEventListener('click', checkGate);
