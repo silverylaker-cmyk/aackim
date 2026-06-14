@@ -262,6 +262,13 @@ body {
     overflow-wrap: anywhere;
     max-width: 100%;
     line-height: 1.25;
+    /* 긴 단어가 카드 밖으로 넘쳐 격자가 어긋나지 않도록 최대 2줄로 제한한다.
+       (카드를 누르면 전체 문장이 큰 화면으로 그대로 보인다) */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
 }
 
 .cell .edit-badge {
