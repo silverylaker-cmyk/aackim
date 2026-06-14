@@ -1000,7 +1000,9 @@ function setupEditor() {
 }
 
 async function resizeImage(file, maxSize) {
-    const bitmap = await createImageBitmap(file);
+    // 카메라로 찍은 세로 사진이 옆으로 눕지 않도록 EXIF 회전 정보를 반영한다
+    // (지원하지 않는 옛 브라우저는 이 옵션을 무시한다)
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bitmap.width * scale);
