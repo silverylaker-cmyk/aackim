@@ -259,7 +259,7 @@ function renderGrid() {
     grid.innerHTML = '';
     const list = cells.filter(c => c.boardId === activeBoardId).sort((a, b) => a.order - b.order);
 
-    list.forEach(cell => {
+    list.forEach((cell, idx) => {
         const div = document.createElement('div');
         div.className = 'cell';
         div.style.setProperty('--cell-color', boardColor(cell.boardId));
@@ -290,11 +290,13 @@ function renderGrid() {
             up.className = 'ord-btn';
             up.textContent = '↑';
             up.setAttribute('aria-label', '앞으로 이동');
+            up.disabled = idx === 0;
             up.addEventListener('click', (e) => { e.stopPropagation(); moveCell(cell, -1); });
             const down = document.createElement('button');
             down.className = 'ord-btn';
             down.textContent = '↓';
             down.setAttribute('aria-label', '뒤로 이동');
+            down.disabled = idx === list.length - 1;
             down.addEventListener('click', (e) => { e.stopPropagation(); moveCell(cell, 1); });
             orderCtl.append(up, down);
             div.appendChild(orderCtl);
