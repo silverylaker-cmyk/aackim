@@ -184,6 +184,8 @@ body {
     cursor: pointer;
     padding: 10px;
     transition: transform 0.08s;
+    /* 길게 눌러도 iOS '이미지 저장' 메뉴가 뜨지 않게 (키오스크) */
+    -webkit-touch-callout: none;
 }
 
 .cell:active,
@@ -298,6 +300,7 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 50;
+    -webkit-touch-callout: none;
 }
 
 .speak-overlay-card {
