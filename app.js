@@ -202,9 +202,12 @@ function renderTabs() {
     nav.innerHTML = '';
     [...boards].sort((a, b) => a.order - b.order).forEach(b => {
         const btn = document.createElement('button');
-        btn.className = 'board-tab' + (b.id === activeBoardId ? ' active' : '');
+        const isActive = b.id === activeBoardId;
+        btn.className = 'board-tab' + (isActive ? ' active' : '');
         btn.textContent = b.name;
         btn.style.background = b.color;
+        // 스크린리더·스위치 사용자에게 지금 선택된 폴더를 알려준다
+        if (isActive) btn.setAttribute('aria-current', 'true');
         btn.addEventListener('click', () => {
             activeBoardId = b.id;
             renderTabs();
