@@ -427,9 +427,23 @@ function speakTts(text) {
     });
 }
 
+const LOG_CAP = 4000; // 사용 기록은 최근 분량만 보관 (저장공간 보호 + 통계 속도)
+let logsSincePrune = 0;
+
+async function pruneLogs() {
+    try {
+        const all = await dbGetAll('logs');
+        if (all.length <= LOG_CAP) return;
+        all.sort((a, b) => a.id - b.id); // 오래된 것(작은 id)부터
+        for (let i = 0; i < all.length - LOG_CAP; i++) await dbDelete('logs', all[i].id);
+    } catch {}
+}
+
 function logUsage(cell) {
     // 기기 내에만 저장(개인정보) — 실패해도 말하기는 막지 않는다
     dbPut('logs', { cellId: cell.id, label: cell.label, ts: Date.now() }).catch(() => {});
+    // 가끔씩만 정리해 탭마다 부담을 주지 않는다
+    if (++logsSincePrune >= 100) { logsSincePrune = 0; pruneLogs(); }
 }
 
 let speakSeq = 0;
