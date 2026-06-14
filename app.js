@@ -1342,11 +1342,14 @@ async function exportData() {
         }))),
     };
     const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = url;
     a.download = `aac-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
-    URL.revokeObjectURL(a.href);
+    // 일부 태블릿 브라우저는 클릭 직후 바로 URL을 해제하면 다운로드가 취소된다.
+    // 다운로드가 시작될 시간을 준 뒤 정리한다(메모리 누수 방지).
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
     await saveSetting('lastBackupAt', Date.now());
     renderBackupStatus();
 }
