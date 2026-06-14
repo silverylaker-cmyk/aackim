@@ -407,9 +407,11 @@ function playBlob(blob) {
         currentAudio = audio;
         // onpause는 stopCurrentAudio()로 중단됐을 때 약속을 풀어준다.
         // (이게 없으면 빠르게 연속으로 누를 때 이전 카드가 멈춘 채로 남음)
-        const done = () => { URL.revokeObjectURL(url); resolve(); };
-        audio.onended = audio.onerror = audio.onpause = done;
-        audio.play().catch(done);
+        // ok=false면 재생 실패(깨진 녹음 등) — 호출 측에서 기계 음성으로 대신 읽는다.
+        const done = (ok) => { URL.revokeObjectURL(url); resolve(ok); };
+        audio.onended = audio.onpause = () => done(true);
+        audio.onerror = () => done(false);
+        audio.play().catch(() => done(false));
     });
 }
 
@@ -446,8 +448,13 @@ async function speakCell(cell, cellEl) {
     if (pref === 'mom') blob = cell.audio?.mom || cell.audio?.dad;
     else if (pref === 'dad') blob = cell.audio?.dad || cell.audio?.mom;
 
-    if (blob) await playBlob(blob);
-    else await speakTts(cell.speech || cell.label);
+    if (blob) {
+        const ok = await playBlob(blob);
+        // 부모 녹음이 깨져 재생되지 않으면 기계 음성으로라도 읽어준다(무음 방지)
+        if (!ok && mySeq === speakSeq) await speakTts(cell.speech || cell.label);
+    } else {
+        await speakTts(cell.speech || cell.label);
+    }
 
     // 말하는 도중 다른 카드를 눌렀다면(최신 호출이 아니면) 마무리는 그쪽에 맡긴다
     if (mySeq !== speakSeq) return;
