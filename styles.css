@@ -30,6 +30,9 @@ body {
     overscroll-behavior: none;
     user-select: none;
     -webkit-user-select: none;
+    /* 카드를 빠르게 두 번 누를 때 화면이 확대돼 갇히는 일 방지(iOS는 user-scalable=no를
+       무시함). 더블탭 확대와 탭 지연을 없애 카드 반응도 더 빨라진다. */
+    touch-action: manipulation;
 }
 
 .app {
