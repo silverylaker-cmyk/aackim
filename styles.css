@@ -198,6 +198,14 @@ body {
     outline-offset: 2px;
 }
 
+/* 키보드·스위치 접근 시 어디에 있는지 보이도록 폴더 탭·버튼에도 같은 강조를 준다.
+   :focus-visible라 터치로 누를 때는 나타나지 않아 평소 화면은 그대로다. */
+.board-tab:focus-visible,
+button:focus-visible {
+    outline: 3px solid #6b9bd1;
+    outline-offset: 2px;
+}
+
 /* 감각 자극 최소화: 애니메이션 OFF면 카드/오버레이 움직임 제거 */
 .reduce-motion .cell {
     transition: none;
