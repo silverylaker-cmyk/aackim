@@ -921,9 +921,16 @@ function setupEditor() {
         const file = e.target.files[0];
         e.target.value = '';
         if (!file) return;
-        pendingImage = await resizeImage(file, 512);
-        pendingEmoji = null;
-        updateEditorPreview();
+        try {
+            // 브라우저가 못 읽는 사진(HEIC·손상 파일 등)이면 createImageBitmap이 실패한다
+            const blob = await resizeImage(file, 512);
+            if (!blob) throw new Error('no blob');
+            pendingImage = blob;
+            pendingEmoji = null;
+            updateEditorPreview();
+        } catch {
+            alert('이 사진을 사용할 수 없어요. 다른 사진(JPG·PNG)으로 시도해 주세요.');
+        }
     });
 
     // 이모지 선택
