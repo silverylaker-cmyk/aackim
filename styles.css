@@ -212,6 +212,25 @@ body {
     animation: none;
 }
 
+/* 기기(OS) 자체에 '동작 줄이기'가 켜져 있으면 보호자 설정과 무관하게
+   장식용 움직임을 없앤다 (감각 민감 아동 배려). 톱니 길게 누르기 진행
+   표시(holdPulse)는 기능상 필요해 그대로 둔다. */
+@media (prefers-reduced-motion: reduce) {
+    .cell {
+        transition: none;
+    }
+    .cell:active,
+    .cell.speaking {
+        transform: none;
+    }
+    .speak-overlay-card {
+        animation: none;
+    }
+    .rec-btn.recording {
+        animation: none;
+    }
+}
+
 .cell-image {
     flex: 1;
     width: 100%;
