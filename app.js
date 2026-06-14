@@ -1141,6 +1141,14 @@ function pushArasaacRecent(q) {
     renderArasaacRecent();
 }
 
+// 인터넷이 느리거나 멈춘 가정용 Wi-Fi에서 검색이 무한정 기다리지 않도록
+// 타임아웃을 둔다 — 시간이 지나면 평소 오류 안내(다시 시도)로 이어진다.
+function fetchWithTimeout(url, ms = 10000) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 async function searchArasaac(query) {
     const q = (query ?? $('arasaac-query').value).trim();
     if (!q) return;
@@ -1152,7 +1160,7 @@ async function searchArasaac(query) {
     }
     results.innerHTML = '<div class="status">🔍 그림을 찾는 중이에요…</div>';
     try {
-        const res = await fetch(ARASAAC_SEARCH + encodeURIComponent(q));
+        const res = await fetchWithTimeout(ARASAAC_SEARCH + encodeURIComponent(q));
         // ARASAAC는 일치하는 그림이 없으면 404를 돌려준다 → 빈 결과로 처리
         if (!res.ok && res.status !== 404) throw new Error(res.status);
         const list = res.status === 404 ? [] : await res.json();
@@ -1178,7 +1186,7 @@ async function searchArasaac(query) {
             img.addEventListener('click', async () => {
                 results.innerHTML = '<div class="status">그림을 저장하는 중이에요…</div>';
                 try {
-                    const r = await fetch(ARASAAC_IMAGE(item._id));
+                    const r = await fetchWithTimeout(ARASAAC_IMAGE(item._id));
                     // 서버 오류·잘못된 응답일 때 그림이 아닌 내용이 카드로 저장되는 것을 막는다
                     if (!r.ok) throw new Error(r.status);
                     const blob = await r.blob();
