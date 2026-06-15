@@ -301,10 +301,12 @@ function updateVoiceIndicator() {
 }
 
 function applyEmojiSize() {
-    const box = document.querySelector('#grid .cell .cell-image');
-    if (!box) return;
-    const h = box.getBoundingClientRect().height;
-    if (h > 0) document.documentElement.style.setProperty('--emoji-size', `${Math.round(h * 1.15)}px`);
+    // 카드 너비를 기준으로 이모지 크기를 정한다. 너비는 grid 1fr로 항상 배율에 따라
+    // 커지므로, aspect-ratio/flex 높이가 불안정한 기기에서도 이모지가 확실히 함께 커진다.
+    const cell = document.querySelector('#grid .cell');
+    if (!cell) return;
+    const w = cell.getBoundingClientRect().width;
+    if (w > 0) document.documentElement.style.setProperty('--emoji-size', `${Math.round(w * 0.78)}px`);
 }
 
 function applyCardScale() {
