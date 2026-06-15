@@ -1304,11 +1304,7 @@ function setupBatch() {
     $('batch-rec').addEventListener('click', async () => {
         const btn = $('batch-rec');
         if (mediaRecorder) {
-            batchBlob = await stopRecording();
-            btn.classList.remove('recording');
-            btn.textContent = '● 다시 녹음';
-            $('batch-play').disabled = false;
-            $('batch-next').disabled = false;
+            await stopBatchRecording();
             return;
         }
         try {
@@ -1318,7 +1314,9 @@ function setupBatch() {
             return;
         }
         btn.classList.add('recording');
-        btn.textContent = '■ 정지';
+        // 일괄 녹음도 편집기와 똑같이 30초면 자동 정지 — 깜빡 잊어도 마이크가 계속 켜지지 않게 한다
+        btn.textContent = '■ 정지 (최대 30초)';
+        recordTimer = setTimeout(() => { if (mediaRecorder) stopBatchRecording(); }, MAX_RECORD_MS);
     });
 
     $('batch-play').addEventListener('click', () => { if (batchBlob) playBlob(batchBlob); });
@@ -1342,13 +1340,25 @@ function setupBatch() {
     $('batch-skip').addEventListener('click', advanceBatch);
 
     $('batch-quit').addEventListener('click', async () => {
+        clearTimeout(recordTimer);
         if (mediaRecorder) await stopRecording();
         $('batch-modal').style.display = 'none';
         cells = await dbGetAll('cells');
     });
 }
 
+async function stopBatchRecording() {
+    clearTimeout(recordTimer);
+    batchBlob = await stopRecording();
+    const btn = $('batch-rec');
+    btn.classList.remove('recording');
+    btn.textContent = '● 다시 녹음';
+    $('batch-play').disabled = false;
+    $('batch-next').disabled = false;
+}
+
 async function advanceBatch() {
+    clearTimeout(recordTimer);
     if (mediaRecorder) await stopRecording();
     batchIndex++;
     if (batchIndex >= batchQueue.length) {
