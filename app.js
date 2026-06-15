@@ -13,6 +13,14 @@ const BOARD_COLORS = [
     '#c8a8e9', '#f29b9b', '#7fd6cf', '#b6c77f', '#e0b48f', '#a9b6f0', '#f0a8d0',
 ];
 
+// 색 동그라미는 글자가 없어 보조기술(스크린리더·스위치)에서 그냥 '버튼'으로만 읽힌다.
+// 색 이름을 붙여 어떤 색을 고르는지 알 수 있게 한다.
+const BOARD_COLOR_NAMES = {
+    '#f2a7c3': '분홍', '#f5d76e': '노랑', '#f5a96e': '주황', '#8ec1f0': '하늘',
+    '#9fd9a0': '연두', '#c8a8e9': '보라', '#f29b9b': '산호', '#7fd6cf': '청록',
+    '#b6c77f': '올리브', '#e0b48f': '베이지', '#a9b6f0': '라벤더', '#f0a8d0': '진분홍',
+};
+
 const DEFAULT_BOARDS = [
     { id: 'core',   name: '핵심',  color: '#f2a7c3', order: 0 },
     { id: 'people', name: '사람',  color: '#f5d76e', order: 1 },
@@ -800,12 +808,20 @@ function openBoardEditor(board) {
     pal.innerHTML = '';
     BOARD_COLORS.forEach(c => {
         const b = document.createElement('button');
+        b.type = 'button';
         b.style.background = c;
-        if (c === pendingBoardColor) b.classList.add('selected');
+        b.setAttribute('aria-label', (BOARD_COLOR_NAMES[c] || '색') + ' 색');
+        const selected = c === pendingBoardColor;
+        if (selected) b.classList.add('selected');
+        b.setAttribute('aria-pressed', selected ? 'true' : 'false');
         b.addEventListener('click', () => {
             pendingBoardColor = c;
-            pal.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
+            pal.querySelectorAll('button').forEach(x => {
+                x.classList.remove('selected');
+                x.setAttribute('aria-pressed', 'false');
+            });
             b.classList.add('selected');
+            b.setAttribute('aria-pressed', 'true');
         });
         pal.appendChild(b);
     });
