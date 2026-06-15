@@ -614,8 +614,11 @@ async function renderUsageStats() {
     logs.forEach(l => { counts[l.label] = (counts[l.label] || 0) + 1; });
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     const max = sorted[0][1];
+    // 많이 쓴 단어가 한눈에 들어오도록 상위 20개만 보여준다(목록이 길면 정작 중요한 정보가 묻힌다)
+    const TOP_N = 20;
+    const shown = sorted.slice(0, TOP_N);
     wrap.innerHTML = '';
-    sorted.forEach(([label, n]) => {
+    shown.forEach(([label, n]) => {
         const row = document.createElement('div');
         row.className = 'usage-row';
         const name = document.createElement('span');
@@ -633,6 +636,12 @@ async function renderUsageStats() {
         row.append(name, track, num);
         wrap.appendChild(row);
     });
+    if (sorted.length > TOP_N) {
+        const more = document.createElement('p');
+        more.className = 'hint';
+        more.textContent = `그 외 ${sorted.length - TOP_N}개 단어가 더 있어요`;
+        wrap.appendChild(more);
+    }
 }
 
 function setupSettings() {
