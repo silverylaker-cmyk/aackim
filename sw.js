@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aac-shell-v55';
+const CACHE_NAME = 'aac-shell-v56';
 const SHELL = [
     './',
     './index.html',
@@ -6,6 +6,7 @@ const SHELL = [
     './app.js',
     './manifest.json',
     './icon.svg',
+    './icon-180.png',
 ];
 
 self.addEventListener('install', (e) => {
