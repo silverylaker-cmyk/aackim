@@ -1462,6 +1462,9 @@ async function importData(e) {
         renderTabs();
         renderGrid();
         updateVoiceIndicator();
+        // 가져오기는 설정 화면에서 실행되므로, 열려 있는 설정 폼(폴더 목록·토글·슬라이더)을
+        // 가져온 값으로 다시 채워 화면과 실제 데이터가 어긋나지 않게 한다.
+        openSettings();
         alert('가져오기가 완료되었습니다.');
     } catch {
         alert('파일을 읽지 못했습니다. 내보내기로 만든 백업 파일인지 확인해 주세요.');
