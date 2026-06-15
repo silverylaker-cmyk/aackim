@@ -604,8 +604,10 @@ function openSettings() {
     });
     $('tts-rate').value = settings.ttsRate;
     $('tts-rate-value').textContent = `${settings.ttsRate}배`;
+    $('tts-rate').setAttribute('aria-valuetext', `${settings.ttsRate}배`);
     $('card-scale').value = settings.cardScale || 1;
     $('card-scale-value').textContent = `${Number(settings.cardScale || 1).toFixed(2)}배`;
+    $('card-scale').setAttribute('aria-valuetext', `${Number(settings.cardScale || 1).toFixed(2)}배`);
     $('opt-animations').checked = !!settings.animations;
     $('opt-reward-sound').checked = !!settings.rewardSound;
     renderLabelSizeButtons();
@@ -684,6 +686,7 @@ function setupSettings() {
         const v = parseFloat($('tts-rate').value);
         saveSetting('ttsRate', v);
         $('tts-rate-value').textContent = `${v}배`;
+        $('tts-rate').setAttribute('aria-valuetext', `${v}배`);
     });
     $('btn-tts-test').addEventListener('click', () => speakTts('안녕하세요, 반가워요'));
 
@@ -691,6 +694,7 @@ function setupSettings() {
         const v = parseFloat($('card-scale').value);
         saveSetting('cardScale', v);
         $('card-scale-value').textContent = `${v.toFixed(2)}배`;
+        $('card-scale').setAttribute('aria-valuetext', `${v.toFixed(2)}배`);
         applyCardScale();
     });
 
