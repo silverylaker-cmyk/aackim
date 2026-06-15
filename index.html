@@ -185,7 +185,7 @@
     <div id="board-modal" class="modal" style="display:none;">
         <div class="modal-box small" role="dialog" aria-modal="true" aria-labelledby="board-modal-title">
             <h2 id="board-modal-title">폴더 편집</h2>
-            <label class="field-label">폴더 이름</label>
+            <label class="field-label" for="board-name">폴더 이름</label>
             <input type="text" id="board-name" placeholder="예: 학교">
             <label class="field-label">색</label>
             <div class="color-palette" id="color-palette"></div>
@@ -204,10 +204,10 @@
 
             <div class="editor-preview" id="editor-preview"></div>
 
-            <label class="field-label">단어 (카드에 보이는 글자)</label>
+            <label class="field-label" for="editor-label">단어 (카드에 보이는 글자)</label>
             <input type="text" id="editor-label" placeholder="예: 물">
 
-            <label class="field-label">읽어줄 말 (선택)</label>
+            <label class="field-label" for="editor-speech">읽어줄 말 (선택)</label>
             <input type="text" id="editor-speech" placeholder="비워두면 위 단어를 읽어요 (예: 물 주세요)">
 
             <label class="field-label">그림</label>
@@ -218,7 +218,7 @@
             </div>
             <input type="file" id="photo-input" accept="image/*" style="display:none;">
 
-            <label class="field-label">카테고리</label>
+            <label class="field-label" for="editor-board">카테고리</label>
             <select id="editor-board"></select>
 
             <label class="field-label">목소리 녹음</label>
