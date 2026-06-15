@@ -292,6 +292,7 @@ function renderGrid() {
         add.addEventListener('click', () => openEditor(null));
         grid.appendChild(add);
     }
+    requestAnimationFrame(applyEmojiSize);
 }
 
 function updateVoiceIndicator() {
@@ -299,8 +300,16 @@ function updateVoiceIndicator() {
     $('voice-indicator').textContent = names[settings.voice] || '';
 }
 
+function applyEmojiSize() {
+    const box = document.querySelector('#grid .cell .cell-image');
+    if (!box) return;
+    const h = box.getBoundingClientRect().height;
+    if (h > 0) document.documentElement.style.setProperty('--emoji-size', `${Math.round(h * 1.15)}px`);
+}
+
 function applyCardScale() {
     document.documentElement.style.setProperty('--cell-scale', settings.cardScale || 1);
+    requestAnimationFrame(applyEmojiSize);
 }
 
 async function moveCell(cell, dir) {
