@@ -366,7 +366,10 @@ function applyLabelSize() {
 
 function renderLabelSizeButtons() {
     document.querySelectorAll('#label-size button').forEach(b => {
-        b.classList.toggle('selected', b.dataset.size === (settings.labelSize || 'medium'));
+        const on = b.dataset.size === (settings.labelSize || 'medium');
+        b.classList.toggle('selected', on);
+        // 선택된 글자 크기를 보조기술(스크린리더·스위치)에도 알린다
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
 }
 
