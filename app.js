@@ -599,7 +599,11 @@ function openSettings() {
     renderUsageStats();
     checkKoreanVoice();
     renderBackupStatus();
-    $('settings-modal').style.display = 'flex';
+    const modal = $('settings-modal');
+    modal.style.display = 'flex';
+    // 설정을 열 때마다 항상 첫 항목(목소리 선택)부터 보이게 한다 — 지난번에 아래로
+    // 스크롤해 두면 다시 열었을 때 중간부터 보여 보호자가 헷갈린다.
+    modal.querySelector('.modal-box').scrollTop = 0;
 }
 
 function checkKoreanVoice() {
