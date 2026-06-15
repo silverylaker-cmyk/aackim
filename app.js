@@ -737,8 +737,18 @@ function setupSettings() {
     $('import-input').addEventListener('change', importData);
 
     $('btn-fullscreen').addEventListener('click', () => {
-        if (document.fullscreenElement) document.exitFullscreen();
-        else document.documentElement.requestFullscreen().catch(() => {});
+        if (document.fullscreenElement) {
+            document.exitFullscreen?.();
+            return;
+        }
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            el.requestFullscreen().catch(() => {});
+        } else {
+            // 아이폰 사파리 등은 전체화면 API가 없어 그냥 눌러도 아무 일이 없었다.
+            // 죽은 버튼처럼 보이지 않게 대신 방법을 안내한다.
+            alert('이 브라우저는 전체 화면을 지원하지 않아요. 홈 화면에 추가해서 열면 전체 화면으로 실행됩니다.');
+        }
     });
 }
 
