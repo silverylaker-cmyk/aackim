@@ -188,6 +188,7 @@ body {
     overflow: hidden;
     min-height: 0;
     position: relative;
+    container-type: size;
 }
 
 .cell-image img {
@@ -202,7 +203,8 @@ body {
 }
 
 .cell-image .emoji {
-    font-size: calc(var(--cell-base) * var(--cell-scale) * 1.39);
+    /* 이미지 박스 크기에 직접 비례시켜, 카드 배율과 무관하게 항상 박스를 꽉 채우되 잘리지 않게 함 */
+    font-size: 115cqmin;
     line-height: 1;
 }
 
