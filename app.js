@@ -3,6 +3,10 @@
 const ARASAAC_SEARCH = 'https://api.arasaac.org/api/pictograms/ko/search/';
 const ARASAAC_IMAGE = (id) => `https://static.arasaac.org/pictograms/${id}/${id}_300.png`;
 
+// 일부 잠금형 태블릿 브라우저(WebView)는 음성 합성을 아예 지원하지 않는다.
+// 이때도 부모 녹음 재생·그림 표시는 동작해야 하므로 기계 음성 호출을 모두 건너뛴다.
+const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+
 // Fitzgerald key 색상: 카테고리별 고정 색으로 위치·색 일관성 유지
 const BOARD_COLORS = [
     '#f2a7c3', '#f5d76e', '#f5a96e', '#8ec1f0', '#9fd9a0',
@@ -402,7 +406,7 @@ function stopCurrentAudio() {
         currentAudio.pause();
         currentAudio = null;
     }
-    speechSynthesis.cancel();
+    if (ttsSupported) speechSynthesis.cancel();
 }
 
 function playBlob(blob) {
@@ -424,6 +428,7 @@ let activeUtterance = null; // 일부 브라우저가 발화 객체를 가비지
 
 function speakTts(text) {
     return new Promise((resolve) => {
+        if (!ttsSupported) { resolve(); return; }
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'ko-KR';
         u.rate = settings.ttsRate;
@@ -597,7 +602,7 @@ function openSettings() {
 function checkKoreanVoice() {
     const warn = $('tts-no-voice');
     if (!warn) return;
-    const hasKorean = speechSynthesis.getVoices().some(v => v.lang && v.lang.startsWith('ko'));
+    const hasKorean = ttsSupported && speechSynthesis.getVoices().some(v => v.lang && v.lang.startsWith('ko'));
     warn.style.display = hasKorean ? 'none' : 'block';
 }
 
@@ -1573,8 +1578,10 @@ async function init() {
     setupWakeLock();
 
     // 안드로이드 크롬에서 voices가 늦게 로드되는 경우 대비
-    speechSynthesis.getVoices();
-    speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); checkKoreanVoice(); };
+    if (ttsSupported) {
+        speechSynthesis.getVoices();
+        speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); checkKoreanVoice(); };
+    }
 
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         navigator.serviceWorker.register('sw.js').catch(() => {});
