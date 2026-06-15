@@ -1029,6 +1029,8 @@ async function resizeImage(file, maxSize) {
 // ===== Recording =====
 let mediaRecorder = null;
 let recordedChunks = [];
+let recordTimer = null;
+const MAX_RECORD_MS = 30000; // 녹음을 켜둔 채 잊어버려도 30초면 자동 정지(배터리·저장공간 보호)
 
 async function startRecording() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1052,6 +1054,7 @@ function stopRecording() {
 
 // 녹음 중 편집 모달을 닫을 때: 마이크를 즉시 끄고 진행 중 녹음을 버린다(개인정보·배터리)
 function cancelRecording() {
+    clearTimeout(recordTimer);
     if (mediaRecorder) {
         try {
             mediaRecorder.onstop = null;
@@ -1068,16 +1071,21 @@ function cancelRecording() {
     });
 }
 
+async function finishRecording(profile) {
+    clearTimeout(recordTimer);
+    const blob = await stopRecording();
+    document.querySelectorAll('.rec-btn').forEach(b => {
+        b.classList.remove('recording');
+        b.textContent = '● 녹음';
+        b.disabled = false;
+    });
+    pendingAudio[profile] = blob;
+    updateRecRows();
+}
+
 async function toggleRecord(btn, profile) {
     if (mediaRecorder) {
-        const blob = await stopRecording();
-        document.querySelectorAll('.rec-btn').forEach(b => {
-            b.classList.remove('recording');
-            b.textContent = '● 녹음';
-            b.disabled = false;
-        });
-        pendingAudio[profile] = blob;
-        updateRecRows();
+        await finishRecording(profile);
         return;
     }
     try {
@@ -1089,6 +1097,8 @@ async function toggleRecord(btn, profile) {
     document.querySelectorAll('.rec-btn').forEach(b => { if (b !== btn) b.disabled = true; });
     btn.classList.add('recording');
     btn.textContent = '■ 정지';
+    // 깜빡 잊고 녹음을 켜둬도 일정 시간 뒤 자동으로 멈춰 저장한다
+    recordTimer = setTimeout(() => { if (mediaRecorder) finishRecording(profile); }, MAX_RECORD_MS);
 }
 
 // ===== Emoji picker =====
