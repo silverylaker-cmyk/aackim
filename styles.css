@@ -202,7 +202,7 @@ body {
 }
 
 .cell-image .emoji {
-    font-size: calc(var(--cell-base) * var(--cell-scale) * 0.75);
+    font-size: calc(var(--cell-base) * var(--cell-scale) * 1.39);
     line-height: 1;
 }
 
