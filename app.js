@@ -935,6 +935,8 @@ function openEditor(cell) {
     pendingAudio = { mom: undefined, dad: undefined };
 
     $('editor-title').textContent = cell ? '카드 편집' : '새 카드 만들기';
+    // 지난번 빈 칸 저장 시도로 바뀐 경고 문구가 남아 새로 열 때도 보이던 문제를 막는다
+    $('editor-label').placeholder = '예: 물';
     $('editor-label').value = cell ? cell.label : '';
     $('editor-speech').value = cell ? (cell.speech || '') : '';
     $('editor-delete').style.display = cell ? 'block' : 'none';
@@ -986,7 +988,7 @@ function setupEditor() {
 
     $('editor-save').addEventListener('click', async () => {
         const label = $('editor-label').value.trim();
-        if (!label) { $('editor-label').placeholder = '단어를 입력해 주세요'; return; }
+        if (!label) { $('editor-label').placeholder = '단어를 입력해 주세요'; $('editor-label').focus(); return; }
         cancelRecording();
 
         const cell = editingCell || {
