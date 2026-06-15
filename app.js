@@ -1409,7 +1409,13 @@ function renderBackupStatus() {
     const days = Math.floor((Date.now() - ts) / 86400000);
     const when = days <= 0 ? '오늘' : days === 1 ? '어제' : `${days}일 전`;
     const date = new Date(ts).toLocaleDateString('ko-KR');
-    el.textContent = `마지막 백업: ${when} (${date})`;
+    // 모든 데이터는 기기 안에만 저장되므로, 오래 백업하지 않으면 기기 분실·초기화 때
+    // 카드와 녹음이 사라질 수 있다. 30일이 지나면 조용히(팝업 없이) 백업을 권한다.
+    const stale = days >= 30;
+    el.classList.toggle('stale', stale);
+    el.textContent = stale
+        ? `마지막 백업: ${when} (${date}) · 가끔 백업해 두면 안심돼요`
+        : `마지막 백업: ${when} (${date})`;
 }
 
 async function importData(e) {

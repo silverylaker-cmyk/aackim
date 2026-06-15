@@ -444,7 +444,8 @@ button:focus-visible {
     margin: 10px 0 0;
 }
 
-.backup-status.never {
+.backup-status.never,
+.backup-status.stale {
     color: #8a6d3b;
 }
 
