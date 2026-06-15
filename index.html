@@ -53,8 +53,8 @@
 
     <!-- Caregiver gate modal -->
     <div id="gate-modal" class="modal" style="display:none;">
-        <div class="modal-box small">
-            <h2>보호자 확인</h2>
+        <div class="modal-box small" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+            <h2 id="gate-title">보호자 확인</h2>
             <p id="gate-question" class="gate-question"></p>
             <input type="number" id="gate-answer" inputmode="numeric" placeholder="정답 입력">
             <div class="modal-actions">
@@ -66,8 +66,8 @@
 
     <!-- Settings modal -->
     <div id="settings-modal" class="modal" style="display:none;">
-        <div class="modal-box">
-            <h2>보호자 설정</h2>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <h2 id="settings-title">보호자 설정</h2>
 
             <section class="settings-section">
                 <h3>🔊 목소리 선택</h3>
@@ -180,7 +180,7 @@
 
     <!-- Board (folder) editor modal -->
     <div id="board-modal" class="modal" style="display:none;">
-        <div class="modal-box small">
+        <div class="modal-box small" role="dialog" aria-modal="true" aria-labelledby="board-modal-title">
             <h2 id="board-modal-title">폴더 편집</h2>
             <label class="field-label">폴더 이름</label>
             <input type="text" id="board-name" placeholder="예: 학교">
@@ -196,7 +196,7 @@
 
     <!-- Cell editor modal -->
     <div id="editor-modal" class="modal" style="display:none;">
-        <div class="modal-box">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="editor-title">
             <h2 id="editor-title">카드 편집</h2>
 
             <div class="editor-preview" id="editor-preview"></div>
@@ -242,8 +242,8 @@
 
     <!-- Emoji picker modal -->
     <div id="emoji-modal" class="modal" style="display:none;">
-        <div class="modal-box">
-            <h2>이모지 선택</h2>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="emoji-title">
+            <h2 id="emoji-title">이모지 선택</h2>
             <input type="text" id="emoji-input" placeholder="키보드로 이모지를 직접 입력해도 돼요">
             <div class="emoji-grid" id="emoji-grid"></div>
             <div class="modal-actions">
@@ -255,8 +255,8 @@
 
     <!-- ARASAAC search modal -->
     <div id="arasaac-modal" class="modal" style="display:none;">
-        <div class="modal-box">
-            <h2>그림 상징 검색</h2>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="arasaac-title">
+            <h2 id="arasaac-title">그림 상징 검색</h2>
             <p class="hint">인터넷 연결이 필요합니다. 선택한 그림은 태블릿에 저장되어 이후엔 인터넷 없이 보입니다.</p>
             <div class="search-row">
                 <input type="text" id="arasaac-query" placeholder="예: 물, 화장실, 안아주세요">
@@ -272,7 +272,7 @@
 
     <!-- Batch recording modal -->
     <div id="batch-modal" class="modal" style="display:none;">
-        <div class="modal-box">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="batch-title">
             <h2 id="batch-title">목소리 녹음</h2>
             <p id="batch-progress" class="batch-progress"></p>
             <div class="editor-preview" id="batch-preview"></div>
