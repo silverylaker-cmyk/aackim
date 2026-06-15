@@ -580,6 +580,8 @@ function openGate(callback) {
     gateExpected = a * b;
     $('gate-question').textContent = `${a} × ${b} = ?`;
     $('gate-answer').value = '';
+    // 지난번 오답으로 바뀐 안내 문구가 남아 새로 열 때도 '다시 입력' 처럼 보이던 문제를 막는다
+    $('gate-answer').placeholder = '정답 입력';
     $('gate-modal').style.display = 'flex';
     setTimeout(() => $('gate-answer').focus(), 100);
 }
@@ -591,6 +593,7 @@ function checkGate() {
     } else {
         $('gate-answer').value = '';
         $('gate-answer').placeholder = '다시 입력해 주세요';
+        $('gate-answer').focus();
     }
 }
 
