@@ -216,6 +216,9 @@ function renderTabs() {
             activeBoardId = b.id;
             renderTabs();
             renderGrid();
+            // 폴더를 바꾸면 항상 맨 위부터 보여준다 — 이전 폴더에서 아래로 스크롤해 둔 채
+            // 새 폴더로 넘어가면 위쪽 카드가 가려져 아이가 찾기 어렵다.
+            $('grid').scrollTop = 0;
         });
         nav.appendChild(btn);
     });
