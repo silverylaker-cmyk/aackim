@@ -1096,7 +1096,8 @@ async function toggleRecord(btn, profile) {
     }
     document.querySelectorAll('.rec-btn').forEach(b => { if (b !== btn) b.disabled = true; });
     btn.classList.add('recording');
-    btn.textContent = '■ 정지';
+    // 자동 정지(30초)가 있다는 걸 보호자가 알 수 있게 버튼에 표시해 갑작스러운 멈춤을 막는다
+    btn.textContent = '■ 정지 (최대 30초)';
     // 깜빡 잊고 녹음을 켜둬도 일정 시간 뒤 자동으로 멈춰 저장한다
     recordTimer = setTimeout(() => { if (mediaRecorder) finishRecording(profile); }, MAX_RECORD_MS);
 }
