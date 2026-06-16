@@ -22,13 +22,13 @@ const BOARD_COLOR_NAMES = {
 };
 
 const DEFAULT_BOARDS = [
-    { id: 'core',   name: '핵심',  color: '#f2a7c3', order: 0 },
-    { id: 'people', name: '사람',  color: '#f5d76e', order: 1 },
-    { id: 'food',   name: '음식',  color: '#f5a96e', order: 2 },
-    { id: 'feel',   name: '느낌',  color: '#8ec1f0', order: 3 },
-    { id: 'act',    name: '활동',  color: '#9fd9a0', order: 4 },
-    { id: 'place',  name: '장소',  color: '#c8a8e9', order: 5 },
-    { id: 'body',   name: '몸',    color: '#f29b9b', order: 6 },
+    { id: 'core',   name: '핵심',  color: '#f2a7c3', order: 0, emoji: '🌟' },
+    { id: 'people', name: '사람',  color: '#f5d76e', order: 1, emoji: '👥' },
+    { id: 'food',   name: '음식',  color: '#f5a96e', order: 2, emoji: '🍎' },
+    { id: 'feel',   name: '느낌',  color: '#8ec1f0', order: 3, emoji: '😊' },
+    { id: 'act',    name: '활동',  color: '#9fd9a0', order: 4, emoji: '🏃' },
+    { id: 'place',  name: '장소',  color: '#c8a8e9', order: 5, emoji: '📍' },
+    { id: 'body',   name: '몸',    color: '#f29b9b', order: 6, emoji: '🧍' },
 ];
 
 const DEFAULT_CELLS = [
@@ -201,6 +201,18 @@ async function seedIfEmpty() {
     cells = await dbGetAll('cells');
 }
 
+// 기존에 만들어진 기본 폴더(핵심/사람/음식 등)에 이모지가 없으면 채워준다
+async function backfillBoardEmojis() {
+    let changed = false;
+    for (const b of boards) {
+        if (!b.emoji) {
+            const def = DEFAULT_BOARDS.find(d => d.id === b.id);
+            if (def) { b.emoji = def.emoji; await dbPut('boards', b); changed = true; }
+        }
+    }
+    if (changed) boards = await dbGetAll('boards');
+}
+
 // ===== Rendering =====
 const $ = (id) => document.getElementById(id);
 
@@ -216,7 +228,7 @@ function renderTabs() {
         const btn = document.createElement('button');
         const isActive = b.id === activeBoardId;
         btn.className = 'board-tab' + (isActive ? ' active' : '');
-        btn.textContent = b.name;
+        btn.textContent = b.emoji ? `${b.emoji} ${b.name}` : b.name;
         btn.style.background = b.color;
         // 스크린리더·스위치 사용자에게 지금 선택된 폴더를 알려준다
         if (isActive) btn.setAttribute('aria-current', 'true');
@@ -323,7 +335,16 @@ function renderGrid() {
         } else {
             div.setAttribute('aria-label', cell.label);
             const speak = () => speakCell(cell, div);
-            div.addEventListener('click', speak);
+            let startX, startY;
+            div.addEventListener('pointerdown', (e) => {
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+            div.addEventListener('pointerup', (e) => {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                if (Math.sqrt(dx * dx + dy * dy) < 120) speak();
+            });
             onActivate(div, speak);
         }
         grid.appendChild(div);
@@ -348,6 +369,7 @@ function renderGrid() {
         onActivate(add, addCard);
         grid.appendChild(add);
     }
+    requestAnimationFrame(applyEmojiSize);
 }
 
 function updateVoiceIndicator() {
@@ -355,8 +377,18 @@ function updateVoiceIndicator() {
     $('voice-indicator').textContent = names[settings.voice] || '';
 }
 
+function applyEmojiSize() {
+    // 카드 너비를 기준으로 이모지 크기를 정한다. 너비는 grid 1fr로 항상 배율에 따라
+    // 커지므로, aspect-ratio/flex 높이가 불안정한 기기에서도 이모지가 확실히 함께 커진다.
+    const cell = document.querySelector('#grid .cell');
+    if (!cell) return;
+    const w = cell.getBoundingClientRect().width;
+    if (w > 0) document.documentElement.style.setProperty('--emoji-size', `${Math.round(w * 0.78)}px`);
+}
+
 function applyCardScale() {
     document.documentElement.style.setProperty('--cell-scale', settings.cardScale || 1);
+    requestAnimationFrame(applyEmojiSize);
 }
 
 function applyLabelSize() {
@@ -1618,6 +1650,7 @@ async function init() {
     db = await openDb();
     await loadSettings();
     await seedIfEmpty();
+    await backfillBoardEmojis();
     // 활성 폴더가 실제로 존재하는지 확인 — 없으면 첫 폴더로 맞춘다.
     // (예: 'core' 폴더가 없는 백업을 가져온 뒤 다시 열면 빈 화면이 뜨던 문제 방지)
     if (!boards.some(b => b.id === activeBoardId)) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aac-shell-v67';
+const CACHE_NAME = 'aac-shell-v68';
 const SHELL = [
     './',
     './index.html',
@@ -10,7 +10,10 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(SHELL)));
+    // HTTP 캐시를 우회(cache: 'reload')해 항상 최신 파일을 내려받아 캐시에 넣는다.
+    e.waitUntil(caches.open(CACHE_NAME).then(c =>
+        Promise.all(SHELL.map(u => fetch(u, { cache: 'reload' }).then(r => c.put(u, r)).catch(() => {})))
+    ));
     self.skipWaiting();
 });
 
