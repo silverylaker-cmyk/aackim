@@ -10,13 +10,13 @@ const BOARD_COLORS = [
 ];
 
 const DEFAULT_BOARDS = [
-    { id: 'core',   name: '핵심',  color: '#f2a7c3', order: 0 },
-    { id: 'people', name: '사람',  color: '#f5d76e', order: 1 },
-    { id: 'food',   name: '음식',  color: '#f5a96e', order: 2 },
-    { id: 'feel',   name: '느낌',  color: '#8ec1f0', order: 3 },
-    { id: 'act',    name: '활동',  color: '#9fd9a0', order: 4 },
-    { id: 'place',  name: '장소',  color: '#c8a8e9', order: 5 },
-    { id: 'body',   name: '몸',    color: '#f29b9b', order: 6 },
+    { id: 'core',   name: '핵심',  color: '#f2a7c3', order: 0, emoji: '🌟' },
+    { id: 'people', name: '사람',  color: '#f5d76e', order: 1, emoji: '👥' },
+    { id: 'food',   name: '음식',  color: '#f5a96e', order: 2, emoji: '🍎' },
+    { id: 'feel',   name: '느낌',  color: '#8ec1f0', order: 3, emoji: '😊' },
+    { id: 'act',    name: '활동',  color: '#9fd9a0', order: 4, emoji: '🏃' },
+    { id: 'place',  name: '장소',  color: '#c8a8e9', order: 5, emoji: '📍' },
+    { id: 'body',   name: '몸',    color: '#f29b9b', order: 6, emoji: '🧍' },
 ];
 
 const DEFAULT_CELLS = [
@@ -187,6 +187,18 @@ async function seedIfEmpty() {
     cells = await dbGetAll('cells');
 }
 
+// 기존에 만들어진 기본 폴더(핵심/사람/음식 등)에 이모지가 없으면 채워준다
+async function backfillBoardEmojis() {
+    let changed = false;
+    for (const b of boards) {
+        if (!b.emoji) {
+            const def = DEFAULT_BOARDS.find(d => d.id === b.id);
+            if (def) { b.emoji = def.emoji; await dbPut('boards', b); changed = true; }
+        }
+    }
+    if (changed) boards = await dbGetAll('boards');
+}
+
 // ===== Rendering =====
 const $ = (id) => document.getElementById(id);
 
@@ -201,7 +213,7 @@ function renderTabs() {
     [...boards].sort((a, b) => a.order - b.order).forEach(b => {
         const btn = document.createElement('button');
         btn.className = 'board-tab' + (b.id === activeBoardId ? ' active' : '');
-        btn.textContent = b.name;
+        btn.textContent = b.emoji ? `${b.emoji} ${b.name}` : b.name;
         btn.style.background = b.color;
         btn.addEventListener('click', () => {
             activeBoardId = b.id;
@@ -1138,6 +1150,7 @@ async function init() {
     db = await openDb();
     await loadSettings();
     await seedIfEmpty();
+    await backfillBoardEmojis();
     applyCardScale();
     renderTabs();
     renderGrid();
