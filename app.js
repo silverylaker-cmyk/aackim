@@ -618,9 +618,11 @@ async function speakCell(cell, cellEl) {
 }
 
 let overlayTimer = null;
+let overlayShownAt = 0;
 
 function showSpeakOverlay(cell) {
     clearTimeout(overlayTimer);
+    overlayShownAt = Date.now();
     cellImageHtml(cell, $('speak-overlay-image'));
     $('speak-overlay-label').textContent = cell.label;
     $('speak-overlay').style.display = 'flex';
@@ -634,6 +636,9 @@ function setupSpeakOverlay() {
     // 오버레이를 누르면 재생을 멈추고 바로 그림판으로 돌아간다
     // (긴 부모 녹음을 끝까지 기다리지 않고 다음 카드를 누를 수 있게)
     $('speak-overlay').addEventListener('click', () => {
+        // 카드 탭(pointerup)으로 오버레이가 막 떠오른 직후, 그 같은 탭에서 생기는
+        // 합성 click이 오버레이 위로 떨어져 곧바로 닫아버리는 것을 막는다.
+        if (Date.now() - overlayShownAt < 400) return;
         speakSeq++; // 진행 중이던 speakCell이 마무리(차임 등)를 다시 하지 않도록
         stopCurrentAudio();
         document.querySelectorAll('.cell.speaking').forEach(c => c.classList.remove('speaking'));
