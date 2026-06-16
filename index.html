@@ -25,6 +25,7 @@
             <nav class="board-tabs" id="board-tabs" aria-label="폴더 선택"></nav>
             <div class="topbar-right">
                 <span id="voice-indicator" class="voice-indicator"></span>
+                <button id="btn-home-toggle" class="gear-btn" aria-label="홈 화면(카테고리만 보기)">🏠</button>
                 <button id="btn-settings" class="gear-btn" aria-label="보호자 설정 (길게 누르기)">
                     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -44,6 +45,9 @@
 
         <!-- Symbol grid -->
         <main class="grid" id="grid"></main>
+
+        <!-- Home screen: 카테고리(폴더)만 큰 아이콘으로 보여주는 화면 -->
+        <main class="grid" id="home-grid" style="display:none;"></main>
     </div>
 
     <!-- Big feedback overlay (shown while speaking) -->
@@ -187,6 +191,15 @@
             <h2 id="board-modal-title">폴더 편집</h2>
             <label class="field-label" for="board-name">폴더 이름</label>
             <input type="text" id="board-name" placeholder="예: 학교">
+
+            <label class="field-label">아이콘</label>
+            <div class="editor-preview" id="board-icon-preview"></div>
+            <div class="row-buttons">
+                <button id="btn-board-pick-photo" class="btn secondary-btn" type="button">📷 사진/파일</button>
+                <button id="btn-board-pick-arasaac" class="btn secondary-btn" type="button">🔍 그림 검색</button>
+                <button id="btn-board-pick-emoji" class="btn secondary-btn" type="button">😊 이모지</button>
+            </div>
+
             <label class="field-label">색</label>
             <div class="color-palette" id="color-palette"></div>
             <div class="modal-actions">

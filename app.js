@@ -176,6 +176,7 @@ let settings = { voice: 'tts', ttsRate: 0.9, cardScale: 1, labelSize: 'medium', 
 const LABEL_SCALES = { small: 0.85, medium: 1, large: 1.25 };
 let activeBoardId = 'core';
 let editMode = false;
+let homeMode = false;
 let currentAudio = null;
 
 async function loadSettings() {
@@ -221,6 +222,10 @@ function boardColor(boardId) {
     return b ? b.color : '#ddd';
 }
 
+function boardIconHtml(board, container) {
+    cellImageHtml({ image: board.image, emoji: board.emoji || '📁' }, container);
+}
+
 function renderTabs() {
     const nav = $('board-tabs');
     nav.innerHTML = '';
@@ -228,10 +233,20 @@ function renderTabs() {
         const btn = document.createElement('button');
         const isActive = b.id === activeBoardId;
         btn.className = 'board-tab' + (isActive ? ' active' : '');
-        btn.textContent = b.emoji ? `${b.emoji} ${b.name}` : b.name;
         btn.style.background = b.color;
         // 스크린리더·스위치 사용자에게 지금 선택된 폴더를 알려준다
         if (isActive) btn.setAttribute('aria-current', 'true');
+
+        const icon = document.createElement('div');
+        icon.className = 'board-tab-icon';
+        boardIconHtml(b, icon);
+
+        const label = document.createElement('div');
+        label.className = 'board-tab-label';
+        label.textContent = b.name;
+
+        btn.append(icon, label);
+
         btn.addEventListener('click', () => {
             activeBoardId = b.id;
             renderTabs();
@@ -372,6 +387,60 @@ function renderGrid() {
     requestAnimationFrame(applyEmojiSize);
 }
 
+// ===== Home screen (카테고리만 보이는 화면) =====
+function renderHomeGrid() {
+    const grid = $('home-grid');
+    grid.innerHTML = '';
+    [...boards].sort((a, b) => a.order - b.order).forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        div.style.setProperty('--cell-color', b.color);
+
+        const imgBox = document.createElement('div');
+        imgBox.className = 'cell-image';
+        boardIconHtml(b, imgBox);
+
+        const label = document.createElement('div');
+        label.className = 'cell-label';
+        label.textContent = b.name;
+
+        div.append(imgBox, label);
+        div.setAttribute('role', 'button');
+        div.tabIndex = 0;
+        div.setAttribute('aria-label', b.name);
+
+        // 홈 화면에서 카테고리를 눌러 들어갈 때는 카드처럼 음성을 내지 않는다
+        const enter = () => {
+            activeBoardId = b.id;
+            setHomeMode(false);
+        };
+        div.addEventListener('click', enter);
+        onActivate(div, enter);
+        grid.appendChild(div);
+    });
+    requestAnimationFrame(applyEmojiSize);
+}
+
+function setHomeMode(on) {
+    homeMode = on;
+    $('board-tabs').style.display = on ? 'none' : '';
+    $('grid').style.display = on ? 'none' : '';
+    $('home-grid').style.display = on ? 'grid' : 'none';
+    $('edit-banner').style.display = (!on && editMode) ? 'flex' : 'none';
+    $('btn-home-toggle').textContent = on ? '↩️' : '🏠';
+    $('btn-home-toggle').setAttribute('aria-label', on ? '카드 화면으로 돌아가기' : '홈 화면(카테고리만 보기)');
+    if (on) {
+        renderHomeGrid();
+    } else {
+        renderTabs();
+        renderGrid();
+    }
+}
+
+function setupHomeToggle() {
+    $('btn-home-toggle').addEventListener('click', () => setHomeMode(!homeMode));
+}
+
 function updateVoiceIndicator() {
     const names = { mom: '엄마 목소리', dad: '아빠 목소리', tts: '기계 음성' };
     $('voice-indicator').textContent = names[settings.voice] || '';
@@ -380,10 +449,10 @@ function updateVoiceIndicator() {
 function applyEmojiSize() {
     // 카드 너비를 기준으로 이모지 크기를 정한다. 너비는 grid 1fr로 항상 배율에 따라
     // 커지므로, aspect-ratio/flex 높이가 불안정한 기기에서도 이모지가 확실히 함께 커진다.
-    const cell = document.querySelector('#grid .cell');
+    const cell = document.querySelector(homeMode ? '#home-grid .cell' : '#grid .cell');
     if (!cell) return;
     const w = cell.getBoundingClientRect().width;
-    if (w > 0) document.documentElement.style.setProperty('--emoji-size', `${Math.round(w * 0.78)}px`);
+    if (w > 0) document.documentElement.style.setProperty('--emoji-size', `${Math.round(w * 0.55)}px`);
 }
 
 function applyCardScale() {
@@ -794,6 +863,25 @@ function setupSettings() {
 // ===== Board (folder) management =====
 let editingBoard = null;       // null이면 새 폴더
 let pendingBoardColor = BOARD_COLORS[0];
+let pendingBoardImage = undefined; // undefined = 변경 없음, null = 제거, Blob = 새 이미지
+let pendingBoardEmoji = undefined;
+// 사진/이모지/그림검색 모달은 카드 편집과 폴더 편집이 함께 쓴다 — 지금 어느 쪽을 위해
+// 골랐는지 표시해서 선택 결과를 올바른 곳(카드 vs 폴더 아이콘)에 반영한다.
+let pickerTarget = 'cell';
+
+function currentBoardIconImage() {
+    if (pendingBoardImage !== undefined) return pendingBoardImage;
+    return editingBoard ? editingBoard.image : null;
+}
+
+function currentBoardIconEmoji() {
+    if (pendingBoardEmoji !== undefined) return pendingBoardEmoji;
+    return editingBoard ? editingBoard.emoji : null;
+}
+
+function updateBoardIconPreview() {
+    boardIconHtml({ image: currentBoardIconImage(), emoji: currentBoardIconEmoji() }, $('board-icon-preview'));
+}
 
 function renderBoardManager() {
     const wrap = $('board-manager');
@@ -851,10 +939,14 @@ async function moveBoard(board, dir) {
 
 function openBoardEditor(board) {
     editingBoard = board;
+    pickerTarget = 'board';
     pendingBoardColor = board ? board.color : BOARD_COLORS[0];
+    pendingBoardImage = undefined;
+    pendingBoardEmoji = undefined;
     $('board-modal-title').textContent = board ? '폴더 편집' : '새 폴더 만들기';
     $('board-name').value = board ? board.name : '';
     $('board-delete').style.display = board ? 'block' : 'none';
+    updateBoardIconPreview();
 
     const pal = $('color-palette');
     pal.innerHTML = '';
@@ -883,16 +975,32 @@ function openBoardEditor(board) {
 function setupBoardEditor() {
     $('board-cancel').addEventListener('click', () => { $('board-modal').style.display = 'none'; });
 
+    $('btn-board-pick-photo').addEventListener('click', () => { pickerTarget = 'board'; $('photo-input').click(); });
+    $('btn-board-pick-emoji').addEventListener('click', () => { pickerTarget = 'board'; openEmojiPicker(); });
+    $('btn-board-pick-arasaac').addEventListener('click', () => {
+        pickerTarget = 'board';
+        $('arasaac-query').value = $('board-name').value.trim();
+        $('arasaac-results').innerHTML = '';
+        renderArasaacRecent();
+        $('arasaac-modal').style.display = 'flex';
+    });
+
     $('board-save').addEventListener('click', async () => {
         const name = $('board-name').value.trim();
         if (!name) { $('board-name').placeholder = '폴더 이름을 입력해 주세요'; return; }
         if (editingBoard) {
             editingBoard.name = name;
             editingBoard.color = pendingBoardColor;
+            if (pendingBoardImage !== undefined) editingBoard.image = pendingBoardImage;
+            if (pendingBoardEmoji !== undefined) editingBoard.emoji = pendingBoardEmoji;
             await dbPut('boards', editingBoard);
         } else {
             const order = Math.max(-1, ...boards.map(b => b.order)) + 1;
-            await dbPut('boards', { id: crypto.randomUUID(), name, color: pendingBoardColor, order });
+            await dbPut('boards', {
+                id: crypto.randomUUID(), name, color: pendingBoardColor, order,
+                image: pendingBoardImage ?? null,
+                emoji: pendingBoardEmoji ?? null,
+            });
         }
         boards = await dbGetAll('boards');
         $('board-modal').style.display = 'none';
@@ -962,6 +1070,7 @@ let pendingAudio = { mom: undefined, dad: undefined };
 
 function openEditor(cell) {
     editingCell = cell;
+    pickerTarget = 'cell';
     pendingImage = undefined;
     pendingEmoji = undefined;
     pendingAudio = { mom: undefined, dad: undefined };
@@ -1068,19 +1177,26 @@ function setupEditor() {
             // 브라우저가 못 읽는 사진(HEIC·손상 파일 등)이면 createImageBitmap이 실패한다
             const blob = await resizeImage(file, 512);
             if (!blob) throw new Error('no blob');
-            pendingImage = blob;
-            pendingEmoji = null;
-            updateEditorPreview();
+            if (pickerTarget === 'board') {
+                pendingBoardImage = blob;
+                pendingBoardEmoji = null;
+                updateBoardIconPreview();
+            } else {
+                pendingImage = blob;
+                pendingEmoji = null;
+                updateEditorPreview();
+            }
         } catch {
             alert('이 사진을 사용할 수 없어요. 다른 사진(JPG·PNG)으로 시도해 주세요.');
         }
     });
 
     // 이모지 선택
-    $('btn-pick-emoji').addEventListener('click', openEmojiPicker);
+    $('btn-pick-emoji').addEventListener('click', () => { pickerTarget = 'cell'; openEmojiPicker(); });
 
     // ARASAAC 검색
     $('btn-pick-arasaac').addEventListener('click', () => {
+        pickerTarget = 'cell';
         $('arasaac-query').value = $('editor-label').value.trim();
         $('arasaac-results').innerHTML = '';
         renderArasaacRecent();
@@ -1220,9 +1336,15 @@ function setupEmojiPicker() {
         const typed = $('emoji-input').value.trim();
         const em = typed || selectedEmoji;
         if (em) {
-            pendingEmoji = em;
-            pendingImage = null;
-            updateEditorPreview();
+            if (pickerTarget === 'board') {
+                pendingBoardEmoji = em;
+                pendingBoardImage = null;
+                updateBoardIconPreview();
+            } else {
+                pendingEmoji = em;
+                pendingImage = null;
+                updateEditorPreview();
+            }
         }
         $('emoji-modal').style.display = 'none';
     });
@@ -1315,9 +1437,15 @@ async function searchArasaac(query) {
                     if (!r.ok) throw new Error(r.status);
                     const blob = await r.blob();
                     if (!blob.type.startsWith('image/')) throw new Error('not an image');
-                    pendingImage = blob;
-                    pendingEmoji = null;
-                    updateEditorPreview();
+                    if (pickerTarget === 'board') {
+                        pendingBoardImage = blob;
+                        pendingBoardEmoji = null;
+                        updateBoardIconPreview();
+                    } else {
+                        pendingImage = blob;
+                        pendingEmoji = null;
+                        updateEditorPreview();
+                    }
                     $('arasaac-modal').style.display = 'none';
                 } catch {
                     results.innerHTML = '<div class="status">그림을 가져오지 못했어요. 다시 시도해 주세요.</div>';
@@ -1665,6 +1793,7 @@ async function init() {
     setupGate();
     setupSettings();
     setupBoardEditor();
+    setupHomeToggle();
     setupEditor();
     setupEmojiPicker();
     setupArasaac();
