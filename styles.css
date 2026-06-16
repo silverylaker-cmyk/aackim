@@ -47,7 +47,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 4px 14px;
     background: var(--bg);
     flex-shrink: 0;
 }
@@ -59,7 +59,7 @@ body {
     overflow-x: auto;
     flex: 1;
     scrollbar-width: none;
-    padding: 4px 2px;
+    padding: 2px 2px;
 }
 
 .board-tabs::-webkit-scrollbar {
