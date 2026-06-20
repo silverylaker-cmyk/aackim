@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   improve-design:
@@ -29,7 +30,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-6
-          prompt: |
+          direct_prompt: |
             Review the children's AAC app design in this repository (styles.css, index.html, app.js).
             This is a picture-based communication app for children with autism — simplicity, clarity,
             and child-friendliness are the top priorities.
