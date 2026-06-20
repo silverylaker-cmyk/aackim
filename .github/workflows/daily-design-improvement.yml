@@ -1,0 +1,50 @@
+name: 매일 새벽 3시 디자인 자동 개선
+
+on:
+  schedule:
+    # 새벽 3시 KST = 18:00 UTC (전날)
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: '개선 포커스 (비워두면 자동 선택)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  improve-design:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: claude/childrens-program-design-il636m
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Claude Code로 디자인 개선
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6
+          prompt: |
+            Review the children's AAC app design in this repository (styles.css, index.html, app.js).
+            This is a picture-based communication app for children with autism — simplicity, clarity,
+            and child-friendliness are the top priorities.
+
+            Make ONE focused, well-reasoned improvement to styles.css (and index.html only if truly needed).
+            Choose from areas not yet addressed, such as:
+            - Larger / more distinct tap targets
+            - Better visual hierarchy between image and label areas
+            - Friendlier typography (size, weight, line-height)
+            - Improved color contrast for accessibility
+            - More cheerful but calm color palette adjustments
+            - Smoother transitions and feedback animations
+            - Better spacing / breathing room between cards
+
+            Focus area hint (if provided): "${{ github.event.inputs.focus }}"
+
+            After making the change, commit with a clear Korean commit message describing WHAT changed
+            and WHY it helps children, then push to branch: claude/childrens-program-design-il636m
