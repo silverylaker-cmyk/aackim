@@ -207,6 +207,33 @@ body {
     align-content: start;
 }
 
+/* 폰 (≤600px): 카드·탭 축소 — 태블릿은 변화 없음 */
+@media (max-width: 600px) {
+    :root {
+        --cell-base: 100px;
+    }
+    .grid {
+        gap: 8px;
+        padding: 8px;
+    }
+    .topbar {
+        padding: 4px 10px;
+    }
+    .board-tabs {
+        gap: 6px;
+    }
+    .board-tab {
+        height: 72px;
+        width: 86px;
+    }
+    .board-tab-icon {
+        width: 72px;
+    }
+    .board-tab-icon .emoji {
+        font-size: 36px;
+    }
+}
+
 @media (min-width: 900px) {
     :root {
         --cell-base: 180px;
